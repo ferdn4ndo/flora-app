@@ -18,11 +18,17 @@ cp .env.example .env
 npm run dev
 ```
 
-With **`VITE_FLORA_HIVE_URL` empty**, the browser calls same-origin `/v1/...` and Vite proxies those paths to Hive, avoiding CORS during local dev.
+With **`VITE_FLORA_HIVE_URL` empty**, the browser calls same-origin `/v1/...` and Vite proxies those paths to Hive, so the browser does not run CORS for those requests.
 
 ## Production build
 
-Set **`VITE_FLORA_HIVE_URL`** to the public Hive origin (no trailing slash). Ensure Hive allows that origin in CORS if the app is hosted on a different domain.
+Set **`VITE_FLORA_HIVE_URL`** to the public Hive origin (no trailing slash).
+
+### CORS (cross-origin app vs Hive)
+
+Flora Hive enables **credentialed CORS** (`Access-Control-Allow-Credentials: true` and a concrete `Access-Control-Allow-Origin`, not `*`). The app sends **`credentials: 'include'`** on Hive requests so browsers accept that response (see `src/lib/api.ts`).
+
+On the Hive side, set **`CORS_ALLOWED_ORIGINS`** to the full **`Origin`** of this SPA (scheme + host + port if non-default), e.g. `https://app.example.com`. Use a comma-separated list for several frontends. If it is unset, Hive allows any origin, which is convenient for dev but loose for production.
 
 ```sh
 npm run build

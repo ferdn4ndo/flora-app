@@ -22,6 +22,7 @@ async function tryRefresh(): Promise<boolean> {
   if (!stored?.refresh_token) return false
   const res = await fetch(`${apiBase()}/v1/auth/refresh`, {
     method: 'POST',
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ refresh_token: stored.refresh_token }),
   })
@@ -44,7 +45,11 @@ export async function hiveFetch(path: string, init: RequestInit = {}): Promise<R
   if (stored?.access_token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${stored.access_token}`)
   }
-  let res = await fetch(url, { ...init, headers })
+  let res = await fetch(url, {
+    ...init,
+    credentials: init.credentials ?? 'include',
+    headers,
+  })
 
   if (res.status === 401 && stored?.refresh_token) {
     refreshInFlight ??= tryRefresh().finally(() => {
@@ -55,7 +60,11 @@ export async function hiveFetch(path: string, init: RequestInit = {}): Promise<R
       const h2 = new Headers(init.headers)
       const next = readStoredAuth()
       if (next?.access_token) h2.set('Authorization', `Bearer ${next.access_token}`)
-      res = await fetch(url, { ...init, headers: h2 })
+      res = await fetch(url, {
+        ...init,
+        credentials: init.credentials ?? 'include',
+        headers: h2,
+      })
     }
   }
 
