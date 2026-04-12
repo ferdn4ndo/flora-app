@@ -14,8 +14,6 @@
 # Secrets:
 #   AWS_ACCESS_KEY_ID
 #   AWS_SECRET_ACCESS_KEY
-# Optional:
-#   AWS_SESSION_TOKEN           temporary credentials (STS)
 #
 # OIDC alternative: replace the configure-aws step with role-to-assume and grant
 # `id-token: write` in permissions (see aws-actions/configure-aws-credentials docs).
@@ -72,7 +70,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ vars.AWS_REGION }}
 
       - name: Upload versioned assets (long cache)
