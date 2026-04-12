@@ -43,11 +43,13 @@ export type DeviceRow = {
   updatedAt: string
 }
 
-/** Entry from Hive `GET /v1/mqtt/devices?include_offline=true`. */
+/** Entry from Hive `GET /v1/mqtt/devices?include_offline=true`. `id` is the MQTT logical segment (`devices.device_id`). */
 export type MqttLiveDevice = {
   id: string
   connected: boolean
   lastSeenAt: string
   lastTopic: string
   identity?: { deviceRowId: string }
+  /** Last payload meta (e.g. Flora heartbeat JSON) when Hive classified the message as telemetry. */
+  telemetry?: Record<string, unknown> | null
 }

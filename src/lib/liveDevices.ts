@@ -1,13 +1,13 @@
 import type { MqttLiveDevice } from '@/types/hive'
 
-/** Map catalog `devices.id` → latest MQTT presence (Hive `/v1/mqtt/devices`). */
-export function indexMqttByCatalogRowId(devices: MqttLiveDevice[]): Map<string, MqttLiveDevice> {
+/** Map logical `devices.device_id` (Hive `MqttLiveDevice.id`) → latest MQTT presence. */
+export function indexMqttByLogicalDeviceId(devices: MqttLiveDevice[]): Map<string, MqttLiveDevice> {
   const m = new Map<string, MqttLiveDevice>()
   for (const d of devices) {
-    const rowId = d.identity?.deviceRowId ?? d.id
-    const prev = m.get(rowId)
+    const key = d.id
+    const prev = m.get(key)
     if (!prev || new Date(d.lastSeenAt).getTime() > new Date(prev.lastSeenAt).getTime()) {
-      m.set(rowId, d)
+      m.set(key, d)
     }
   }
   return m

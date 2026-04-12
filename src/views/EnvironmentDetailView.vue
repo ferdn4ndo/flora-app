@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
 import { hiveJson } from '@/lib/api'
-import { indexMqttByCatalogRowId, presenceLabel } from '@/lib/liveDevices'
+import { indexMqttByLogicalDeviceId, presenceLabel } from '@/lib/liveDevices'
 import type { DeviceRow, EnvironmentRow, MqttLiveDevice } from '@/types/hive'
 
 const route = useRoute()
@@ -11,7 +11,7 @@ const environmentId = computed(() => String(route.params.environmentId ?? ''))
 
 const environment = ref<EnvironmentRow | null>(null)
 const devices = ref<DeviceRow[]>([])
-const mqttByRow = ref<Map<string, MqttLiveDevice>>(new Map())
+const mqttByLogicalDeviceId = ref<Map<string, MqttLiveDevice>>(new Map())
 const loading = ref(true)
 const error = ref('')
 
@@ -21,7 +21,7 @@ const newDeviceType = ref('flora_root')
 const newDisplayName = ref('')
 const addError = ref('')
 const adding = ref(false)
-const lastRegisteredCatalogId = ref('')
+const lastRegisteredMqttDeviceId = ref('')
 const copyFlash = ref('')
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -29,7 +29,7 @@ let pollTimer: ReturnType<typeof setInterval> | null = null
 const rows = computed(() =>
   devices.value.map((device) => ({
     device,
-    live: mqttByRow.value.get(device.id),
+    live: mqttByLogicalDeviceId.value.get(device.deviceId),
   })),
 )
 
@@ -38,7 +38,7 @@ async function loadMqttOnly() {
     const mqttRes = await hiveJson<{ devices: MqttLiveDevice[] }>(
       '/v1/mqtt/devices?include_offline=true',
     )
-    mqttByRow.value = indexMqttByCatalogRowId(mqttRes.devices ?? [])
+    mqttByLogicalDeviceId.value = indexMqttByLogicalDeviceId(mqttRes.devices ?? [])
   } catch {
     /* keep previous map if MQTT unavailable */
   }
@@ -69,7 +69,7 @@ async function loadAll() {
     error.value = e instanceof Error ? e.message : 'Failed to load environment'
     environment.value = null
     devices.value = []
-    mqttByRow.value = new Map()
+    mqttByLogicalDeviceId.value = new Map()
   } finally {
     loading.value = false
   }
@@ -116,7 +116,7 @@ async function onAddDevice() {
         }),
       },
     )
-    lastRegisteredCatalogId.value = created.id
+    lastRegisteredMqttDeviceId.value = created.deviceId
     const next = [...devices.value.filter((d) => d.id !== created.id), created]
     next.sort((a, b) =>
       (a.displayName || a.deviceId).localeCompare(b.displayName || b.deviceId, undefined, {
@@ -135,7 +135,7 @@ async function onAddDevice() {
   }
 }
 
-async function copyCatalogId(id: string) {
+async function copyMqttDeviceId(id: string) {
   try {
     await navigator.clipboard.writeText(id)
     copyFlash.value = id
@@ -160,7 +160,7 @@ onUnmounted(() => {
 })
 
 watch(environmentId, () => {
-  lastRegisteredCatalogId.value = ''
+  lastRegisteredMqttDeviceId.value = ''
   void loadAll()
 })
 </script>
@@ -191,14 +191,13 @@ watch(environmentId, () => {
       </div>
     </header>
 
-    <p v-if="lastRegisteredCatalogId" class="banner success" role="status">
+    <p v-if="lastRegisteredMqttDeviceId" class="banner success" role="status">
       <span
-        >Device registered. Use catalog id
-        <code class="mono">{{ lastRegisteredCatalogId }}</code> as the first MQTT segment (see Flora Hive
-        README).</span
+        >Device registered. Use this <strong>device ID</strong> as the first MQTT topic segment:
+        <code class="mono">{{ lastRegisteredMqttDeviceId }}</code> (see Flora Hive README).</span
       >
-      <button type="button" class="btn-inline" @click="copyCatalogId(lastRegisteredCatalogId)">
-        {{ copyFlash === lastRegisteredCatalogId ? 'Copied' : 'Copy id' }}
+      <button type="button" class="btn-inline" @click="copyMqttDeviceId(lastRegisteredMqttDeviceId)">
+        {{ copyFlash === lastRegisteredMqttDeviceId ? 'Copied' : 'Copy id' }}
       </button>
     </p>
 
@@ -206,7 +205,7 @@ watch(environmentId, () => {
       <h2 id="add-dev-title" class="panel-title">Register device</h2>
       <p class="muted hint">
         Hive requires a <strong>device type</strong> and a <strong>device ID</strong> (logical id, often the
-        hardware UUID). The server returns a <strong>catalog id</strong> used in MQTT topics.
+        hardware UUID). That same value is the first segment in MQTT topics after the topic prefix.
       </p>
       <form class="form" @submit.prevent="onAddDevice">
         <label class="field">
@@ -258,6 +257,10 @@ watch(environmentId, () => {
           <span class="dot" aria-hidden="true" />
           <span>{{ presenceLabel(live) }}</span>
         </div>
+        <details v-if="live?.telemetry && typeof live.telemetry === 'object'" class="telemetry">
+          <summary>Last MQTT payload</summary>
+          <pre class="mono tel-pre">{{ JSON.stringify(live.telemetry, null, 2) }}</pre>
+        </details>
       </li>
     </ul>
     <div v-else class="empty">
@@ -529,6 +532,25 @@ watch(environmentId, () => {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--flora-card, var(--color-background));
+}
+
+.telemetry {
+  flex-basis: 100%;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-text-mute);
+}
+
+.tel-pre {
+  margin: 0.35rem 0 0;
+  padding: 0.5rem 0.65rem;
+  max-height: 12rem;
+  overflow: auto;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background-mute, rgba(0, 0, 0, 0.04));
+  font-size: 0.72rem;
+  line-height: 1.35;
 }
 
 .item-main {
