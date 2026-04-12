@@ -1,0 +1,83 @@
+/* Flora app — light shell + dark login */
+:root {
+  --flora-sage: #5c7f6a;
+  --flora-sage-muted: #8aa396;
+  --flora-moss: #3d5a4a;
+  --flora-sky: #0ea5e9;
+  --flora-sky-soft: #e0f2fe;
+  --flora-cream: #f7f9f6;
+  --flora-paper: #fdfdfb;
+  --flora-ink: #1c2e28;
+  --flora-ink-muted: #5c6f68;
+  --flora-border: #dfe8e2;
+  --flora-card: #ffffff;
+  --flora-shadow: 0 1px 2px rgba(28, 46, 40, 0.06), 0 8px 24px rgba(28, 46, 40, 0.06);
+
+  --color-background: var(--flora-paper);
+  --color-background-soft: var(--flora-cream);
+  --color-background-mute: #eef3ef;
+
+  --color-border: var(--flora-border);
+  --color-border-hover: #c5d4cc;
+
+  --color-heading: var(--flora-ink);
+  --color-text: var(--flora-ink);
+  --color-text-mute: var(--flora-ink-muted);
+
+  --color-accent: var(--flora-sky);
+  --color-accent-soft: var(--flora-sky-soft);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --flora-cream: #141a18;
+    --flora-paper: #0f1412;
+    --flora-card: #1a2220;
+    --flora-border: #2a3532;
+    --flora-ink: #e8f0ec;
+    --flora-ink-muted: #9fb0a8;
+    --flora-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+
+    --color-background: var(--flora-paper);
+    --color-background-soft: var(--flora-cream);
+    --color-background-mute: #1e2825;
+
+    --color-border: var(--flora-border);
+    --color-border-hover: #3d4d48;
+
+    --color-heading: var(--flora-ink);
+    --color-text: #c5d4ce;
+    --color-text-mute: var(--flora-ink-muted);
+
+    --color-accent: #38bdf8;
+    --color-accent-soft: rgba(56, 189, 248, 0.12);
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  line-height: 1.55;
+  font-family:
+    'DM Sans',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}

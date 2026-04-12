@@ -1,0 +1,122 @@
+# Deploy the Vite production build to S3 (replaces local scripts/deploy-s3.sh).
+#
+# GitHub → Settings → Environments → production → Environment variables / secrets
+#
+# Variables (recommended on environment `production`):
+#   VITE_FLORA_HIVE_URL         required — public Hive API origin for the client bundle
+#   AWS_REGION                  e.g. us-east-1
+#   FLORA_APP_S3_BUCKET         target bucket name
+# Optional:
+#   FLORA_APP_S3_PREFIX         key prefix, e.g. app/ (no leading slash; same idea as S3_PREFIX in .env.example)
+#   FLORA_APP_DIST_DIR          local build folder (default: dist; same idea as DIST_DIR in .env.example)
+#   CLOUDFRONT_DISTRIBUTION_ID  if set, invalidates /* after upload (same role as CLOUDFRONT_ID in .env.example)
+#
+# Secrets:
+#   AWS_ACCESS_KEY_ID
+#   AWS_SECRET_ACCESS_KEY
+# Optional:
+#   AWS_SESSION_TOKEN           temporary credentials (STS)
+#
+# OIDC alternative: replace the configure-aws step with role-to-assume and grant
+# `id-token: write` in permissions (see aws-actions/configure-aws-credentials docs).
+
+name: Deploy to S3
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - "**.md"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-s3-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and upload dist
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".nvmrc"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        env:
+          VITE_FLORA_HIVE_URL: ${{ vars.VITE_FLORA_HIVE_URL }}
+        run: |
+          test -n "${VITE_FLORA_HIVE_URL:-}" || {
+            echo "Set VITE_FLORA_HIVE_URL on the production environment (public Hive API origin, no trailing slash)." >&2
+            exit 1
+          }
+          npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Upload versioned assets (long cache)
+        env:
+          BUCKET: ${{ vars.FLORA_APP_S3_BUCKET }}
+          PREFIX_RAW: ${{ vars.FLORA_APP_S3_PREFIX }}
+          DIST_DIR: ${{ vars.FLORA_APP_DIST_DIR }}
+        run: |
+          set -euo pipefail
+          test -n "$BUCKET" || { echo "Set FLORA_APP_S3_BUCKET environment variable." >&2; exit 1; }
+          DIST="${DIST_DIR:-dist}"
+          test -d "$DIST" || { echo "Missing build directory: $DIST (run build or set FLORA_APP_DIST_DIR)." >&2; exit 1; }
+          PREFIX="${PREFIX_RAW:-}"
+          if [[ -n "$PREFIX" ]]; then
+            PREFIX="${PREFIX#/}"
+            [[ "$PREFIX" == */ ]] || PREFIX="${PREFIX}/"
+          fi
+          TARGET="s3://${BUCKET}/${PREFIX}"
+          echo "Sync → ${TARGET}"
+          aws s3 sync "$DIST/" "$TARGET" --delete \
+            --cache-control "public,max-age=31536000,immutable" \
+            --exclude "index.html"
+
+      - name: Upload index.html (no long-term cache)
+        env:
+          BUCKET: ${{ vars.FLORA_APP_S3_BUCKET }}
+          PREFIX_RAW: ${{ vars.FLORA_APP_S3_PREFIX }}
+          DIST_DIR: ${{ vars.FLORA_APP_DIST_DIR }}
+        run: |
+          set -euo pipefail
+          DIST="${DIST_DIR:-dist}"
+          PREFIX="${PREFIX_RAW:-}"
+          if [[ -n "$PREFIX" ]]; then
+            PREFIX="${PREFIX#/}"
+            [[ "$PREFIX" == */ ]] || PREFIX="${PREFIX}/"
+          fi
+          TARGET="s3://${BUCKET}/${PREFIX}"
+          aws s3 cp "$DIST/index.html" "${TARGET}index.html" \
+            --cache-control "no-cache,no-store,must-revalidate" \
+            --content-type "text/html; charset=utf-8"
+
+      - name: Invalidate CloudFront
+        if: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        env:
+          DIST_ID: ${{ vars.CLOUDFRONT_DISTRIBUTION_ID }}
+        run: |
+          aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths "/*"
