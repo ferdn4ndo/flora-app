@@ -1,0 +1,111 @@
+/**
+ * Flora — global color tokens (imported once from base.css).
+ * Use `var(--color-…)` in components; palette lives under `--flora-…`.
+ */
+
+:root {
+  /* Brand palette */
+  --flora-sage: #5c7f6a;
+  --flora-sage-muted: #8aa396;
+  --flora-moss: #3d5a4a;
+  --flora-sky: #0ea5e9;
+  --flora-sky-soft: #e0f2fe;
+  --flora-cream: #f7f9f6;
+  --flora-paper: #fdfdfb;
+  --flora-ink: #1c2e28;
+  --flora-ink-muted: #5c6f68;
+  --flora-border: #dfe8e2;
+  --flora-card: #ffffff;
+  --flora-shadow: 0 1px 2px rgba(28, 46, 40, 0.06), 0 8px 24px rgba(28, 46, 40, 0.06);
+
+  /* App shell semantics */
+  --color-background: var(--flora-paper);
+  --color-background-soft: var(--flora-cream);
+  --color-background-mute: #eef3ef;
+
+  --color-border: var(--flora-border);
+  --color-border-hover: #c5d4cc;
+
+  --color-heading: var(--flora-ink);
+  --color-text: var(--flora-ink);
+  --color-text-mute: var(--flora-ink-muted);
+
+  --color-accent: var(--flora-sky);
+  --color-accent-soft: var(--flora-sky-soft);
+
+  /* Text / contrast on accent-filled controls */
+  --color-on-accent: #0f172a;
+
+  /* Shadows (fallbacks match previous hard-coded values) */
+  --shadow-ambient-xs: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-ambient-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-ambient-hairline: 0 1px 0 rgba(0, 0, 0, 0.03);
+  --shadow-brand-inset: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+
+  /* Forms & alerts */
+  --color-form-error: #b91c1c;
+  --color-error-border: #fecaca;
+  --color-error-bg: #fef2f2;
+  --color-error-text: #991b1b;
+
+  /* Inline code / telemetry blocks */
+  --color-fill-subtle: rgba(0, 0, 0, 0.04);
+
+  /* Presence pill */
+  --color-presence-online-fg: var(--flora-moss);
+  --color-presence-online-bg: rgba(14, 165, 233, 0.12);
+  --color-presence-dot-off: #94a3b8;
+  --color-presence-dot-on: #22c55e;
+
+  /* Login route (fixed dark slate; independent of system theme) */
+  --login-bg-a: #0f172a;
+  --login-bg-b: #1e293b;
+  --login-text: #e2e8f0;
+  --login-text-muted: #94a3b8;
+  --login-card-bg: rgba(15, 23, 42, 0.65);
+  --login-card-border: rgba(148, 163, 184, 0.2);
+  --login-card-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --login-label: #cbd5e1;
+  --login-input-border: rgba(148, 163, 184, 0.35);
+  --login-input-bg: #0f172a;
+  --login-input-text: #f1f5f9;
+  --login-focus-ring: #38bdf8;
+  --login-primary-bg: #38bdf8;
+  --login-primary-fg: #0f172a;
+  --login-error: #fca5a5;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --flora-cream: #141a18;
+    --flora-paper: #0f1412;
+    --flora-card: #1a2220;
+    --flora-border: #2a3532;
+    --flora-ink: #e8f0ec;
+    --flora-ink-muted: #9fb0a8;
+    --flora-shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px rgba(0, 0, 0, 0.45);
+
+    --color-background: var(--flora-paper);
+    --color-background-soft: var(--flora-cream);
+    --color-background-mute: #1e2825;
+
+    --color-border: var(--flora-border);
+    --color-border-hover: #3d4d48;
+
+    --color-heading: var(--flora-ink);
+    --color-text: #c5d4ce;
+    --color-text-mute: var(--flora-ink-muted);
+
+    --color-accent: #38bdf8;
+    --color-accent-soft: rgba(56, 189, 248, 0.12);
+
+    --color-form-error: #fca5a5;
+    --color-error-border: #7f1d1d;
+    --color-error-bg: rgba(127, 29, 29, 0.25);
+    --color-error-text: #fecaca;
+
+    --color-fill-subtle: rgba(255, 255, 255, 0.06);
+
+    --color-presence-online-fg: #86efac;
+  }
+}

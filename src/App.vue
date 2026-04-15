@@ -44,7 +44,7 @@ async function onLogout() {
   padding: 0.65rem 1.5rem;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-background);
-  box-shadow: var(--flora-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
+  box-shadow: var(--flora-shadow);
 }
 
 .brand {
@@ -62,8 +62,8 @@ async function onLogout() {
   width: 1.75rem;
   height: 1.75rem;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--flora-sage, #5c7f6a) 0%, var(--flora-moss, #3d5a4a) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, var(--flora-sage) 0%, var(--flora-moss) 100%);
+  box-shadow: var(--shadow-brand-inset);
 }
 
 .nav {

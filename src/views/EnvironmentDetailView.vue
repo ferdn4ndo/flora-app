@@ -421,7 +421,7 @@ watch(environmentId, () => {
   border: none;
   border-radius: 10px;
   background: var(--color-accent);
-  color: #0f172a;
+  color: var(--color-on-accent);
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
@@ -492,7 +492,7 @@ watch(environmentId, () => {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--flora-card, var(--color-background));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-ambient-sm);
 }
 
 .panel-title {
@@ -545,7 +545,7 @@ watch(environmentId, () => {
 .form-err {
   margin: 0;
   font-size: 0.85rem;
-  color: #b91c1c;
+  color: var(--color-form-error);
 }
 
 .form-actions {
@@ -586,9 +586,9 @@ watch(environmentId, () => {
 }
 
 .error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 
 .error strong {
@@ -631,7 +631,7 @@ watch(environmentId, () => {
   overflow: auto;
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  background: var(--color-background-mute, rgba(0, 0, 0, 0.04));
+  background: var(--color-background-mute, var(--color-fill-subtle));
   font-size: 0.72rem;
   line-height: 1.35;
 }
@@ -702,7 +702,7 @@ watch(environmentId, () => {
 .rename-err {
   margin: 0;
   font-size: 0.8rem;
-  color: #b91c1c;
+  color: var(--color-form-error);
 }
 
 .btn-sm {
@@ -750,19 +750,19 @@ watch(environmentId, () => {
 }
 
 .presence.online {
-  color: var(--flora-moss, #3d5a4a);
-  background: rgba(14, 165, 233, 0.12);
+  color: var(--color-presence-online-fg);
+  background: var(--color-presence-online-bg);
 }
 
 .presence .dot {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: #94a3b8;
+  background: var(--color-presence-dot-off);
 }
 
 .presence.online .dot {
-  background: #22c55e;
+  background: var(--color-presence-dot-on);
 }
 
 .empty {
@@ -777,25 +777,5 @@ watch(environmentId, () => {
   margin: 0 0 0.5rem;
   font-weight: 600;
   font-size: 1.05rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .rename-err {
-    color: #fca5a5;
-  }
-
-  .form-err {
-    color: #fca5a5;
-  }
-
-  .error {
-    border-color: #7f1d1d;
-    background: rgba(127, 29, 29, 0.25);
-    color: #fecaca;
-  }
-
-  .presence.online {
-    color: #86efac;
-  }
 }
 </style>
