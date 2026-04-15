@@ -24,6 +24,11 @@ const adding = ref(false)
 const lastRegisteredMqttDeviceId = ref('')
 const copyFlash = ref('')
 
+const renameLogicalId = ref('')
+const renameDisplayName = ref('')
+const renameError = ref('')
+const renameSaving = ref(false)
+
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
 const rows = computed(() =>
@@ -76,6 +81,7 @@ async function loadAll() {
 }
 
 function openAdd() {
+  cancelRename()
   addError.value = ''
   newDeviceId.value = ''
   newDeviceType.value = 'flora_root'
@@ -147,6 +153,51 @@ async function copyMqttDeviceId(id: string) {
   }
 }
 
+function startRename(d: DeviceRow) {
+  renameError.value = ''
+  renameLogicalId.value = d.deviceId
+  renameDisplayName.value = d.displayName ?? ''
+}
+
+function cancelRename() {
+  renameLogicalId.value = ''
+  renameDisplayName.value = ''
+  renameError.value = ''
+}
+
+async function onSaveRename() {
+  const envId = environmentId.value
+  const logicalId = renameLogicalId.value.trim()
+  if (!envId || !logicalId) return
+  renameError.value = ''
+  const trimmed = renameDisplayName.value.trim()
+  renameSaving.value = true
+  try {
+    const updated = await hiveJson<DeviceRow>(
+      `/v1/environments/${encodeURIComponent(envId)}/devices/${encodeURIComponent(logicalId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          displayName: trimmed.length ? trimmed : null,
+        }),
+      },
+    )
+    const next = [...devices.value.filter((x) => x.id !== updated.id), updated]
+    next.sort((a, b) =>
+      (a.displayName || a.deviceId).localeCompare(b.displayName || b.deviceId, undefined, {
+        sensitivity: 'base',
+      }),
+    )
+    devices.value = next
+    cancelRename()
+  } catch (e) {
+    renameError.value = e instanceof Error ? e.message : 'Could not update device'
+  } finally {
+    renameSaving.value = false
+  }
+}
+
 onMounted(() => {
   void loadAll()
   pollTimer = setInterval(() => {
@@ -161,6 +212,7 @@ onUnmounted(() => {
 
 watch(environmentId, () => {
   lastRegisteredMqttDeviceId.value = ''
+  cancelRename()
   void loadAll()
 })
 </script>
@@ -248,7 +300,38 @@ watch(environmentId, () => {
     <ul v-else-if="rows.length" class="list">
       <li v-for="{ device: d, live } in rows" :key="d.id" class="item">
         <div class="item-main">
-          <span class="title">{{ d.displayName || d.deviceId }}</span>
+          <div class="item-title-row">
+            <template v-if="renameLogicalId === d.deviceId">
+              <form class="rename-form" @submit.prevent="onSaveRename">
+                <label class="rename-field">
+                  <span class="sr-only">Display name</span>
+                  <input
+                    v-model="renameDisplayName"
+                    type="text"
+                    name="renameDisplayName"
+                    autocomplete="off"
+                    :disabled="renameSaving"
+                    :aria-invalid="!!renameError"
+                  />
+                </label>
+                <div class="rename-actions">
+                  <button type="button" class="btn-secondary btn-sm" :disabled="renameSaving" @click="cancelRename">
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn-primary btn-sm" :disabled="renameSaving">
+                    {{ renameSaving ? 'Saving…' : 'Save' }}
+                  </button>
+                </div>
+              </form>
+            </template>
+            <template v-else>
+              <span class="title">{{ d.displayName || d.deviceId }}</span>
+              <button type="button" class="btn-secondary btn-sm" @click="startRename(d)">Rename</button>
+            </template>
+          </div>
+          <p v-if="renameLogicalId === d.deviceId && renameError" class="rename-err" role="alert">
+            {{ renameError }}
+          </p>
           <span class="sub mono">Logical id: {{ d.deviceId }}</span>
           <span class="sub mono">Catalog id (MQTT): {{ d.id }}</span>
           <span class="sub">Type: {{ d.deviceType }}</span>
@@ -338,7 +421,7 @@ watch(environmentId, () => {
   border: none;
   border-radius: 10px;
   background: var(--color-accent);
-  color: #0f172a;
+  color: var(--color-on-accent);
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
@@ -409,7 +492,7 @@ watch(environmentId, () => {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--flora-card, var(--color-background));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-ambient-sm);
 }
 
 .panel-title {
@@ -462,7 +545,7 @@ watch(environmentId, () => {
 .form-err {
   margin: 0;
   font-size: 0.85rem;
-  color: #b91c1c;
+  color: var(--color-form-error);
 }
 
 .form-actions {
@@ -503,9 +586,9 @@ watch(environmentId, () => {
 }
 
 .error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 
 .error strong {
@@ -548,7 +631,7 @@ watch(environmentId, () => {
   overflow: auto;
   border-radius: 8px;
   border: 1px solid var(--color-border);
-  background: var(--color-background-mute, rgba(0, 0, 0, 0.04));
+  background: var(--color-background-mute, var(--color-fill-subtle));
   font-size: 0.72rem;
   line-height: 1.35;
 }
@@ -558,6 +641,85 @@ watch(environmentId, () => {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+}
+
+.item-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 0.75rem;
+}
+
+.item-title-row .title {
+  flex: 1;
+  min-width: 0;
+}
+
+.rename-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.rename-field {
+  flex: 1;
+  min-width: 10rem;
+  margin: 0;
+}
+
+.rename-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-background);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.rename-field input:focus {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.rename-field input:disabled {
+  opacity: 0.6;
+}
+
+.rename-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rename-err {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--color-form-error);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .title {
@@ -588,19 +750,19 @@ watch(environmentId, () => {
 }
 
 .presence.online {
-  color: var(--flora-moss, #3d5a4a);
-  background: rgba(14, 165, 233, 0.12);
+  color: var(--color-presence-online-fg);
+  background: var(--color-presence-online-bg);
 }
 
 .presence .dot {
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 50%;
-  background: #94a3b8;
+  background: var(--color-presence-dot-off);
 }
 
 .presence.online .dot {
-  background: #22c55e;
+  background: var(--color-presence-dot-on);
 }
 
 .empty {
@@ -615,21 +777,5 @@ watch(environmentId, () => {
   margin: 0 0 0.5rem;
   font-weight: 600;
   font-size: 1.05rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  .form-err {
-    color: #fca5a5;
-  }
-
-  .error {
-    border-color: #7f1d1d;
-    background: rgba(127, 29, 29, 0.25);
-    color: #fecaca;
-  }
-
-  .presence.online {
-    color: #86efac;
-  }
 }
 </style>

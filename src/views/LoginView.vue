@@ -65,8 +65,13 @@ async function onSubmit() {
   align-items: center;
   justify-content: center;
   padding: 1.5rem;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 45%, #0f172a 100%);
-  color: #e2e8f0;
+  background: linear-gradient(
+    160deg,
+    var(--login-bg-a) 0%,
+    var(--login-bg-b) 45%,
+    var(--login-bg-a) 100%
+  );
+  color: var(--login-text);
 }
 
 h1 {
@@ -78,7 +83,7 @@ h1 {
 
 .sub {
   margin: 0 0 1.75rem;
-  color: #94a3b8;
+  color: var(--login-text-muted);
   font-size: 0.95rem;
 }
 
@@ -90,9 +95,9 @@ h1 {
   gap: 1rem;
   padding: 1.5rem;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  background: var(--login-card-bg);
+  border: 1px solid var(--login-card-border);
+  box-shadow: var(--login-card-shadow);
 }
 
 label {
@@ -100,20 +105,20 @@ label {
   flex-direction: column;
   gap: 0.35rem;
   font-size: 0.8rem;
-  color: #cbd5e1;
+  color: var(--login-label);
 }
 
 input {
   padding: 0.55rem 0.65rem;
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  background: #0f172a;
-  color: #f1f5f9;
+  border: 1px solid var(--login-input-border);
+  background: var(--login-input-bg);
+  color: var(--login-input-text);
   font-size: 1rem;
 }
 
 input:focus {
-  outline: 2px solid #38bdf8;
+  outline: 2px solid var(--login-focus-ring);
   outline-offset: 1px;
   border-color: transparent;
 }
@@ -123,8 +128,8 @@ input:focus {
   padding: 0.6rem 1rem;
   border: none;
   border-radius: 8px;
-  background: #38bdf8;
-  color: #0f172a;
+  background: var(--login-primary-bg);
+  color: var(--login-primary-fg);
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -138,6 +143,6 @@ input:focus {
 .err {
   margin: 0;
   font-size: 0.85rem;
-  color: #fca5a5;
+  color: var(--login-error);
 }
 </style>

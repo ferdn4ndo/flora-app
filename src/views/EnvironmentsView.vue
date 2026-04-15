@@ -175,12 +175,12 @@ async function onCreate() {
   border: none;
   border-radius: 10px;
   background: var(--color-accent);
-  color: #0f172a;
+  color: var(--color-on-accent);
   font: inherit;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-ambient-xs);
 }
 
 .btn-primary:hover:not(:disabled) {
@@ -219,7 +219,7 @@ async function onCreate() {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--flora-card, var(--color-background));
-  box-shadow: var(--flora-shadow, 0 1px 3px rgba(0, 0, 0, 0.06));
+  box-shadow: var(--flora-shadow);
 }
 
 .create-title {
@@ -283,7 +283,7 @@ async function onCreate() {
 .form-err {
   margin: 0;
   font-size: 0.85rem;
-  color: #b91c1c;
+  color: var(--color-form-error);
 }
 
 .form-actions {
@@ -291,12 +291,6 @@ async function onCreate() {
   flex-wrap: wrap;
   gap: 0.65rem;
   justify-content: flex-end;
-}
-
-@media (prefers-color-scheme: dark) {
-  .form-err {
-    color: #fca5a5;
-  }
 }
 
 .muted {
@@ -338,9 +332,9 @@ async function onCreate() {
 }
 
 .error {
-  border-color: #fecaca;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: var(--color-error-border);
+  background: var(--color-error-bg);
+  color: var(--color-error-text);
 }
 
 .error strong {
@@ -353,14 +347,6 @@ async function onCreate() {
   margin: 0;
   font-size: 0.9rem;
   opacity: 0.95;
-}
-
-@media (prefers-color-scheme: dark) {
-  .error {
-    border-color: #7f1d1d;
-    background: rgba(127, 29, 29, 0.25);
-    color: #fecaca;
-  }
 }
 
 .list {
@@ -381,7 +367,7 @@ async function onCreate() {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   background: var(--flora-card, var(--color-background));
-  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  box-shadow: var(--shadow-ambient-hairline);
   transition:
     border-color 0.15s ease,
     box-shadow 0.15s ease;
@@ -415,7 +401,7 @@ async function onCreate() {
 @media (hover: hover) {
   .item:hover {
     border-color: var(--color-border-hover);
-    box-shadow: var(--flora-shadow, 0 4px 14px rgba(0, 0, 0, 0.06));
+    box-shadow: var(--flora-shadow);
   }
 
   .item-link:hover .name {
