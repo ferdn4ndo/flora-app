@@ -8,6 +8,8 @@ Vue **3** + **Vite** + **TypeScript** SPA for **[Flora Hive](https://github.com/
 - `npm run build` — type-check + production bundle.
 - `npm run type-check` — `vue-tsc`.
 - `npm run lint` — oxlint then ESLint (`--fix`).
+- `npm test` — **Vitest** once (`happy-dom`). `npm run test:watch` — watch mode.
+- Unit specs: `src/**/*.spec.ts` (see **`vitest.config.ts`**; not part of `vue-tsc` project refs — avoids Vite type duplication with Vitest’s nested Vite).
 - Node: `^20.19.0 || >=22.12.0` (see `package.json`).
 
 ## API & environment
@@ -15,6 +17,7 @@ Vue **3** + **Vite** + **TypeScript** SPA for **[Flora Hive](https://github.com/
 - **`VITE_FLORA_HIVE_URL`** — Empty in dev: browser hits same-origin `/v1/...`, **Vite proxies** `/v1` and `/healthz` to **`VITE_DEV_FLORA_HIVE_PROXY_TARGET`** (default `http://localhost:8080`). Non-empty in prod: full Hive origin, no trailing slash.
 - **`hiveFetch` / `hiveJson`** (`src/lib/api.ts`) — `credentials: 'include'`, Bearer from `localStorage` unless `Authorization` already set. **401** → single-flight **`/v1/auth/refresh`**, then retry; failure clears auth.
 - **`apiBase()`** — exported; used for login URL (see below).
+- The main backend for this app is the [Flora Hive](https://github.com/ferdn4ndo/flora-hive) API. It is used to get and manage the user's environments and devices.
 
 ## Auth
 
@@ -22,6 +25,7 @@ Vue **3** + **Vite** + **TypeScript** SPA for **[Flora Hive](https://github.com/
 - **`login`** (`stores/auth.ts`) uses **`fetch(`${apiBase()}/v1/auth/login`, …)`** (not `hiveJson`) — same body/credentials pattern.
 - **`bootstrap`** — if access token exists, **`GET /v1/auth/me`** (12s abort); on failure clears storage. Router **`beforeEach`** awaits bootstrap once (`bootstrapped`); **mount only after `router.isReady()`** (`main.ts`) so the first navigation is not blank.
 - **`logout`** — `POST /v1/auth/logout` via `hiveFetch`, then clear storage.
+- Based on [userver-auth](https://github.com/ferdn4ndo/userver-auth).
 
 ## Router
 
@@ -42,7 +46,9 @@ Vue **3** + **Vite** + **TypeScript** SPA for **[Flora Hive](https://github.com/
 
 - Path alias **`@/`** → `src/`.
 - Hive errors: `hiveJson` throws **`Error`** with API **`message`** when present.
+- Pull Requests descriptions must follow the convention on `.github/PULL_REQUEST_TEMPLATE.md`.
 
 ## Out of scope in repo
 
-- No automated tests. Hive OpenAPI contract not checked in-repo; behavior matches Flora Hive routes described in Hive README / source.
+- Hive OpenAPI contract not checked in-repo; behavior matches Flora Hive routes described in Hive README / source.
+- Temporary files should be stored in the `/tmp` directory.
