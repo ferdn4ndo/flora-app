@@ -4,5 +4,5 @@
 
 ## Checklist
 
-- [ ] `npm run lint` and `npm run build` pass locally
+- [ ] `npm run lint`, `npm test`, and `npm run build` pass locally
 - [ ] `.env.example` updated if new configuration is required
